@@ -1,11 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:weather_app/services/weather-data.dart';
-import 'package:weather_app/services/place-service.dart';
-//import 'package:weather_app/widgets/cityes-list.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
+import 'package:weather_app/services/connection-check.dart';
+import 'package:weather_app/widgets/cities-list-model.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
-
   final String title;
 
   @override
@@ -13,88 +14,76 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String textFieldValue = 'textField';
-  String cityName;
-  String temp = 'temp';
-  WeatherData weatherData = WeatherData();
-
-  List<String> suggestions;
-
-  List<String> citiesList = [
-    'Current Location',
-  ];
-  Map<String, String> citiesTemp = {
-    'Current Location': '-',
-  };
-
-  TextEditingController _controller;
-
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
-    getLocalTemp();
-  }
-
-  void getLocalTemp() async {
-    temp = await weatherData.getLocTemp();
-    setState(() {
-      citiesTemp['Current Location'] = temp;
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+    context.read<CitiesListModel>().updateWeatherData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          widget.title,
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
+          LocationButton(
+              context.watch<CitiesListModel>().getCurrentLocationExisting),
           IconButton(
-            icon: Icon(Icons.location_on),
+            icon: Icon(Icons.update),
             onPressed: () async {
-              bool isTrue = false;
-              print(citiesList);
-              print(citiesTemp);
-              temp = await weatherData.getLocTemp();
-              citiesList.forEach((element) {
-                if (element == 'Current Location') {
-                  isTrue = true;
-                }
-              });
-              if (!isTrue) {
-                citiesList.add('Current Location');
+              bool b = await isConnection();
+
+              if (b == true) {
+                context.read<CitiesListModel>().updateWeatherData();
+              } else {
+                showDialog<SimpleDialog>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return SimpleDialog(
+                      title: Text('Network issue'),
+                      children: [
+                        Container(
+                          padding: EdgeInsets.fromLTRB(24, 0, 24, 20),
+                          child: Text('Check internet connection'),
+                        ),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              child: Text('Ok'),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
               }
-              setState(() {
-                citiesTemp['Current Location'] = temp;
-              });
             },
-          )
+          ),
         ],
       ),
       body: Container(
+        padding: EdgeInsets.only(bottom: 100),
         child: DraggableScrollableSheet(
-          initialChildSize: 1.0,
-          minChildSize: 1.0,
+          initialChildSize: 1,
+          minChildSize: 1,
           expand: true,
           builder: (BuildContext context, ScrollController scrollController) {
             return Container(
               child: ListView.builder(
                 controller: scrollController,
-                itemCount: citiesList.length,
+                itemCount: context.watch<CitiesListModel>().getItems.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Dismissible(
                     direction: DismissDirection.endToStart,
                     onDismissed: (direction) {
-                      setState(() {
-                        citiesTemp.remove(citiesList[index]);
-                        citiesList.removeAt(index);
-                      });
+                      context.read<CitiesListModel>().removeAt(index);
                     },
                     background: Container(
                       color: Colors.red,
@@ -120,15 +109,18 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-                    key: Key(citiesList[index]),
+                    key: Key(context.watch<CitiesListModel>().getItems[index]),
                     child: InkWell(
                       child: ListTile(
-                        title: Row(
+                        title: Wrap(
                           children: [
-                            Text(citiesList[index]),
+                            Text(context
+                                .watch<CitiesListModel>()
+                                .getItems[index]),
                           ],
                         ),
-                        trailing: Text('${citiesTemp[citiesList[index]]} °'),
+                        trailing: Text(
+                            '${context.watch<CitiesListModel>().tempMap[context.watch<CitiesListModel>().getItems[index]]} °'),
                       ),
                     ),
                   );
@@ -139,65 +131,98 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet<void>(
-            context: context,
-            builder: (BuildContext context) {
-              return Container(
-                height: 700,
-                child: Column(
-                  children: [
-                    SizedBox(height: 15),
-                    Text('Enter City Name',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        )),
-                    TextField(
-                      decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 30)),
-                      autofocus: true,
-                      onChanged: (String value) async {
-                        textFieldValue = value;
-                        PlaceApiProvider apiProvider = PlaceApiProvider();
-                        suggestions = await apiProvider.fetchSuggestions(value);
-                        print(suggestions);
-                      },
-                      controller: _controller,
-                    ),
-                    ElevatedButton(
-                        onPressed: () async {
-                          print(citiesList);
-                          print(citiesTemp);
-                          cityName = textFieldValue[0].toUpperCase() +
-                              textFieldValue.substring(1);
-                          print(cityName);
-                          for (var x in citiesList) {
-                            if (x == cityName) {
-                              Navigator.pop(context);
-                              return;
-                            }
-                          }
-                          temp = await weatherData.getCityTemp(cityName);
-                          if (temp == 'error') {
-                            Navigator.pop(context);
-                            return;
-                          }
-                          citiesList.add(cityName);
-                          citiesTemp[cityName] = temp;
-                          setState(() {});
-                          Navigator.pop(context);
-                        },
-                        child: Text('Search')),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        tooltip: 'Increment',
         child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.pushNamed(context, '/city-selection-screen');
+          context.read<CitiesListModel>().setTextInput('');
+        },
       ),
     );
+  }
+}
+
+class LocationButton extends StatefulWidget {
+  final bool b;
+  LocationButton(this.b);
+  @override
+  _LocationButtonState createState() => _LocationButtonState();
+}
+
+class _LocationButtonState extends State<LocationButton> {
+  @override
+  Widget build(BuildContext context) {
+    if (widget.b) {
+      return Container(
+        width: 48,
+        height: 56,
+      );
+    } else {
+      return Container(
+        width: 48,
+        height: 56,
+        child: IconButton(
+          icon: Icon(Icons.my_location),
+          onPressed: () async {
+            bool serviceEnabled;
+            LocationPermission permission;
+
+            serviceEnabled = await Geolocator.isLocationServiceEnabled();
+            permission = await Geolocator.checkPermission();
+            if (!serviceEnabled) {
+              showDialog<SimpleDialog>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: Text('Sorry'),
+                    children: [
+                      Container(
+                          padding: EdgeInsets.fromLTRB(24, 0, 24, 20),
+                          child: Text('Location services are disabled')),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            child: Text('Ok'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else if (permission == LocationPermission.deniedForever) {
+              showDialog<SimpleDialog>(
+                context: context,
+                builder: (BuildContext context) {
+                  return SimpleDialog(
+                    title: Text('Sorry'),
+                    children: [
+                      Container(
+                          padding: EdgeInsets.fromLTRB(24, 0, 24, 20),
+                          child: Text(
+                              'You need enable location permission in setting for the app.')),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            child: Text('Ok'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else {
+              context.read<CitiesListModel>().addCurrentLocation();
+            }
+          },
+        ),
+      );
+    }
   }
 }

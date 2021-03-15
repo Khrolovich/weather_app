@@ -1,3 +1,0 @@
-class CitiesList {
-  var citiesList = {};
-}

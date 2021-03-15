@@ -1,49 +1,58 @@
 import 'dart:convert';
-//import 'dart:io';
 
 import 'package:http/http.dart';
-
-class Suggestion {
-  final String placeId;
-  final String description;
-
-  Suggestion(this.placeId, this.description);
-
-  // @override
-  // String toString() {
-  //   return 'Suggestion(placeId: $placeId, description: $description)';
-  // }
-}
+import 'package:weather_app/keys.dart';
 
 class PlaceApiProvider {
-  String languege = '';
   final client = Client();
-  static final String apiKey = 'AIzaSyAkZtmdf9IKKYbCbOBZ2cKCsOIaUu9md-o';
 
-  Future<List<String>> fetchSuggestions(String input) async {
+  final apiKey = kPlacesAPIKey;
+
+  Future<String> getPlaceID(String input) async {
     final request =
-        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=$apiKey';
+        'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=$input&inputtype=textquery&language=en&key=$apiKey';
     final response = await client.get(request);
-    List<String> suggestedList;
+
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
       if (result['status'] == 'OK') {
-        // compose suggestions in a list
-        suggestedList = result['predictions']
-            .list<String>((s) => s['description'].toString())
-            .toList();
-        // return result['predictions']
-        //     .map<Suggestion>((p) => Suggestion(p['place_id'], p['description']))
-        //     .toList();
-        print(suggestedList);
-        return suggestedList;
+        String placeID = result['candidates'][0]['place_id'];
+        print(placeID);
+        return placeID;
+      } else {
+        // if (result['status'] == 'ZERO_RESULTS') {
+        //   return 'error';
+        // }
+        return 'error';
       }
-      if (result['status'] == 'ZERO_RESULTS') {
+      //throw Exception(result['error_message']);
+    } else {
+      return 'error';
+      //throw Exception('Failed to fetch suggestion');
+    }
+  }
+
+  Future<List<String>> fetchSuggestions(String input) async {
+    final request =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&lang=en&types=(regions)&key=$apiKey';
+    final response = await client.get(request);
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      if (result['status'] == 'OK') {
+        List citiesList = result['predictions']
+            .map<String>((p) => p['description'].toString())
+            .toList();
+        print(citiesList);
+        return citiesList;
+      } else {
+        //if (result['status'] == 'ZERO_RESULTS') {
         return [];
       }
-      throw Exception(result['error_message']);
+      //throw Exception(result['error_message']);
     } else {
-      throw Exception('Failed to fetch suggestion');
+      return [];
+      //throw Exception('Failed to fetch suggestion');
     }
   }
 }
