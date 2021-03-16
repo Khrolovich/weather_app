@@ -14,4 +14,7 @@ There should be two lines inside:
 "const String kWeatherAPIKey = '$yourKey';
 const String kPlacesAPIKey = '$yourKey';"
 
+Send me please your suggestions if you see my code for I can improve it.
+
 <img src="https://github.com/Uladzimir-KH/weather_app/blob/main/gifs-for-github/ezgif.com-gif-maker.gif" width="250"/>
+
