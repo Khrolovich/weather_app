@@ -14,5 +14,8 @@ There should be two lines inside:
 "const String kWeatherAPIKey = '$yourKey';
 const String kPlacesAPIKey = '$yourKey';"
 
-![](https://github.com/Uladzimir-KH/weather_app/blob/main/gifs-for-github/ezgif.com-gif-maker.gif | width=100)
+<img src="https://github.com/Uladzimir-KH/weather_app/blob/main/gifs-for-github/ezgif.com-gif-maker.gif" width="250"/>
+
+![](https://github.com/Uladzimir-KH/weather_app/blob/main/gifs-for-github/ezgif.com-gif-maker.gif)
+
 
