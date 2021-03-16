@@ -1,16 +1,17 @@
 # weather_app
 
-A new Flutter application.
+This is my first app. 
 
-## Getting Started
+The app use APIs:
+- [openweathermap.org API](https://openweathermap.org/api)
+- [Google Places API - autocomplete](https://developers.google.com/maps/documentation/places/web-service/overview) 
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+You are should to add 'keys.dart' file to 'lib' directory and create your API Keys.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+There should be two lines inside:
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+const String kWeatherAPIKey = '$yourKey';
+const String kPlacesAPIKey = '$yourKey';
+
+
