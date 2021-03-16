@@ -14,4 +14,3 @@ There should be two lines inside:
 const String kWeatherAPIKey = '$yourKey';
 const String kPlacesAPIKey = '$yourKey';
 
-
