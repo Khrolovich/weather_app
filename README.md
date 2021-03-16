@@ -11,6 +11,8 @@ You are should to add 'keys.dart' file to 'lib' directory and create your API Ke
 
 There should be two lines inside:
 
-const String kWeatherAPIKey = '$yourKey';
-const String kPlacesAPIKey = '$yourKey';
+"const String kWeatherAPIKey = '$yourKey';
+const String kPlacesAPIKey = '$yourKey';"
+
+- [](https://github.com/Uladzimir-KH/weather_app/blob/main/gifs-for-github/ezgifcom-gif-maker.gif)
 
