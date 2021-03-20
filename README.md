@@ -16,4 +16,4 @@ const String kPlacesAPIKey = '$yourKey';"
 
 Send me please your suggestions if you see my code for I can improve it.
 
-<img src="https://github.com/Uladzimir-KH/weather_app/blob/main/gifs-for-github/ezgif.com-gif-maker.gif" width="250"/>
+<img src="https://github.com/Uladzimir-KH/weather_app/blob/main/gifs-for-github/ezgifcom-gif-maker.gif" width="250"/>
