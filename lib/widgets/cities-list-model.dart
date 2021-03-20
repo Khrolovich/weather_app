@@ -35,7 +35,7 @@ class CitiesListModel extends ChangeNotifier {
         return;
       }
     });
-    if (currentLocationExist == true) {
+    if (currentLocationExist) {
       return;
     }
     _citiesList.insert(0, currentLocationName);

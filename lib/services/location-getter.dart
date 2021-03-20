@@ -33,6 +33,7 @@ class CurrentLocation {
           desiredAccuracy: LocationAccuracy.low);
       latitude = position.latitude;
       longitude = position.longitude;
+      print('latitude is: $latitude\nlongitude is: $longitude');
     } catch (e) {
       print(e);
     }
